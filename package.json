@@ -1,0 +1,30 @@
+{
+  "name": "flight-scheduler-app",
+  "version": "1.0.0",
+  "description": "A web application to visualize scheduling processes with a drag-and-drop flight scheduler.",
+  "main": "src/index.tsx",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "keywords": [
+    "flight",
+    "scheduler",
+    "drag-and-drop",
+    "react"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "4.0.3",
+    "typescript": "^4.1.2"
+  },
+  "devDependencies": {
+    "@types/react": "^17.0.85",
+    "@types/react-dom": "^17.0.2"
+  }
+}
