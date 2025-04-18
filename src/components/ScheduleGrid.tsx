@@ -2,53 +2,42 @@ import React from 'react';
 import './ScheduleGrid.css';
 
 interface ScheduleGridProps {
-    nrofCabinCrew: number; // Number of columns in the schedule
+    nrOfCabinCrew: number; // Number of cabin crew rows in the calendar
+    daysInMonth: number; // Number of days in the month
 }
 
-const ScheduleGrid: React.FC<ScheduleGridProps> = ({ nrofCabinCrew }) => {
-    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const hours = Array.from({ length: 24 }, (_, i) => i); // 0 to 23 hours
+const ScheduleGrid: React.FC<ScheduleGridProps> = ({ nrOfCabinCrew, daysInMonth }) => {
+    const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
     return (
         <div className="schedule-grid">
-            {/* Render the header row with crew labels */}
+            {/* Render the header row */}
             <div className="schedule-header">
-                <div className="empty-cell"></div>
-                {Array.from({ length: nrofCabinCrew }, (_, crewIndex) => (
-                    <div key={crewIndex} className="crew-header">
-                        {`Crew ${crewIndex + 1}`}
+                <div className="crew-header">Cabin Crew</div>
+                {Array.from({ length: daysInMonth }, (_, dayIndex) => (
+                    <div key={dayIndex} className="day-header">
+                        {`Day ${dayIndex + 1}`}
                     </div>
                 ))}
             </div>
 
-            {/* Render the schedule grid */}
-            <div className="schedule-body">
-                {daysOfWeek.map((day) => (
-                    <div key={day} className="day-row">
-                        <div className="day-label">{day}</div>
-                        {Array.from({ length: nrofCabinCrew }, (_, crewIndex) => (
-                            <div key={crewIndex} className="crew-column">
-                                {hours.map((hour) => (
-                                    <div
-                                        key={`${day}-${hour}-${crewIndex}`}
-                                        className="hour-slot"
-                                        onDragOver={(e) => e.preventDefault()}
-                                        onDrop={(e) => {
-                                            const flightData = e.dataTransfer.getData('flight');
-                                            console.log(
-                                                `Dropped flight on Crew ${crewIndex + 1}, ${day} at ${hour}:00`,
-                                                flightData
-                                            );
-                                        }}
-                                    >
-                                        {`${hour}:00`}
-                                    </div>
-                                ))}
-                            </div>
-                        ))}
-                    </div>
-                ))}
-            </div>
+            {/* Render the schedule body */}
+            {Array.from({ length: nrOfCabinCrew }, (_, crewIndex) => (
+                <div
+                    key={crewIndex}
+                    className={`crew-row ${crewIndex % 2 === 0 ? 'even-row' : 'odd-row'}`}
+                >
+                    {/* Cabin crew label */}
+                    <div className="crew-label">{`Crew ${crewIndex + 1}`}</div>
+
+                    {/* Days of the week */}
+                    {Array.from({ length: daysInMonth }, (_, dayIndex) => (
+                        <div key={dayIndex} className="day-cell">
+                            {daysOfWeek[dayIndex % 7]} {/* Display the day of the week */}
+                        </div>
+                    ))}
+                </div>
+            ))}
         </div>
     );
 };
