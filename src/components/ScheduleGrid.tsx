@@ -2,38 +2,42 @@ import React from 'react';
 import './ScheduleGrid.css';
 
 interface ScheduleGridProps {
-    nrOfCabinCrew: number; // Number of cabin crew rows in the calendar
+    nrOfCabinCrew: number; // Number of cabin crew columns in the calendar
     daysInMonth: number; // Number of days in the month
 }
 
 const ScheduleGrid: React.FC<ScheduleGridProps> = ({ nrOfCabinCrew, daysInMonth }) => {
-    const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const generate24Hours = (): string[] => {
+        return Array.from({ length: 24 }, (_, hour) => `${hour.toString().padStart(2, '0')}:00`);
+    };
+
+    const hours = generate24Hours(); // Generate the 24-hour format once
 
     return (
         <div className="schedule-grid">
-            {/* Render the header row */}
             <div className="schedule-header">
-                <div className="crew-header">Cabin Crew</div>
-                {Array.from({ length: daysInMonth }, (_, dayIndex) => (
-                    <div key={dayIndex} className="day-header">
-                        {`Day ${dayIndex + 1}`}
+                <div className="crew-header"></div>
+                {Array.from({ length: nrOfCabinCrew }, (_, crewIndex) => (
+                    <div key={crewIndex} className="crew-header">
+                        {`Crew ${crewIndex + 1}`}
                     </div>
                 ))}
             </div>
 
             {/* Render the schedule body */}
-            {Array.from({ length: nrOfCabinCrew }, (_, crewIndex) => (
-                <div
-                    key={crewIndex}
-                    className={`crew-row ${crewIndex % 2 === 0 ? 'even-row' : 'odd-row'}`}
-                >
-                    {/* Cabin crew label */}
-                    <div className="crew-label">{`Crew ${crewIndex + 1}`}</div>
+            {Array.from({ length: daysInMonth }, (_, dayIndex) => (
+                <div key={dayIndex} className="day-row">
+                    {/* Day label */}
+                    <div className="day-label">{`Day ${dayIndex + 1}`}</div>
 
-                    {/* Days of the week */}
-                    {Array.from({ length: daysInMonth }, (_, dayIndex) => (
-                        <div key={dayIndex} className="day-cell">
-                            {daysOfWeek[dayIndex % 7]} {/* Display the day of the week */}
+                    {/* Display all 24 hours for each cabin crew */}
+                    {Array.from({ length: nrOfCabinCrew }, (_, crewIndex) => (
+                        <div key={crewIndex} className="hour-cell">
+                            {hours.map((hour, hourIndex) => (
+                                <div key={hourIndex} className="hour-item">
+                                    {hour}
+                                </div>
+                            ))}
                         </div>
                     ))}
                 </div>

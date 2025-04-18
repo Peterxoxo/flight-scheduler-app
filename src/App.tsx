@@ -22,7 +22,7 @@ const App: React.FC = () => {
                     style={{ width: '50px', marginLeft: '10px' }}
                 />
             </div>
-            <ScheduleGrid nrOfCabinCrew={nrOfCabinCrew} daysInMonth={30} />
+            <ScheduleGrid nrOfCabinCrew={nrOfCabinCrew} daysInMonth={10} />
         </div>
     );
 };

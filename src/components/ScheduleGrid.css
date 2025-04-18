@@ -1,65 +1,102 @@
 .schedule-grid {
-    display: grid;
-    grid-auto-rows: minmax(50px, auto); /* Automatically adjust row height */
+    display: flex;
     gap: 1px;
-    width: 100%; /* Set the grid width to 100% of the container */
-    max-width: 70vw; /* Limit the width to 70% of the viewport */
-    max-height: 80vh; /* Limit the height to 80% of the viewport */
-    overflow-y: auto; /* Enable vertical scrolling */
     overflow-x: auto; /* Enable horizontal scrolling */
+    overflow-y: auto; /* Enable vertical scrolling */
     margin: 0 auto; /* Center the grid horizontally */
     border: 1px solid #ccc;
     background-color: #fff;
+    max-width: 80vmax;
+    max-height: fit-content;
 }
 
 .schedule-header {
-    display: grid;
-    grid-template-columns: 150px repeat(var(--days-in-month), 100px); /* Fixed column for Cabin Crew + One column per day */
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: 100px repeat(var(--nr-of-cabin-crew), auto); /* Fixed width for the first column + dynamic widths for others */
     font-weight: bold;
     text-align: center;
-    background-color: #f0f0f0;
+    background-color: #a79999;
     position: sticky;
+    z-index: 2;
     top: 0;
-    z-index: 1;
-    overflow-y: auto; /* Enable vertical scrolling */
+    white-space: nowrap; /* Prevent line breaks in the header */
 }
 
-.crew-header,
-.day-header {
-    padding: 10px;
+.crew-header {
+    display: flex;
+    flex-direction: column;
     border: 1px solid #ccc;
+    background-color: #ddd;
+    text-align: center;
+    height: 30px; /* Adjusted height for crew header */
 }
 
-.crew-row {
+.day-header {
+    padding: 1px;
+    border: 1px solid #ccc;
+    background-color: #c22525;
+    text-align: center;
+    overflow-x: scroll;
+    white-space: nowrap; /* Prevent line breaks in day headers */
+    box-sizing: border-box; /* Ensure padding and border are included in the width */
+    height: 30px; /* Adjusted height for day header */
+}
+
+.day-row {
     display: grid;
-    grid-template-columns: 150px repeat(var(--days-in-month), 100px); /* Fixed column for Cabin Crew + One column per day */
-    align-items: center;
+    grid-template-columns: 100px repeat(var(--nr-of-cabin-crew), auto); /* Fixed width for the first column + dynamic widths for others */
+    align-items: start;
+    height: 30px; /* Adjusted minimum height for day rows */
 }
 
-.crew-label {
+.day-label {
     text-align: center;
     font-weight: bold;
     background-color: #ddd;
-    padding: 10px;
     border: 1px solid #ccc;
     position: sticky;
     left: 0;
     z-index: 1;
+    white-space: nowrap; /* Prevent line breaks in day labels */
+    height: 30px; /* Adjusted height for day labels */
 }
 
-.day-cell {
+.hour-cell {
+    display: flex;
+    flex-direction: row; /* Stack hours horizontally */
     text-align: center;
     background-color: #f9f9f9;
-    padding: 10px;
+    padding: 1px;
     border: 1px dashed #ddd;
     cursor: pointer;
+    white-space: nowrap; /* Prevent line breaks in hour cells */
+    height: 30px; /* Adjusted height for hour cells */
+    }
+
+.hour-item:hover {
+    background-color: #e0e0e0; /* Change background color on hover */
+    transform: scale(1.05); /* Slightly enlarge the cell on hover */
+    border-color: #bbb; /* Change border color on hover */
+}
+
+.hour-item {
+    display: flex;
+    flex-direction: row;
+    font-size: 10px;
+    padding: 2px ;
+    border-bottom: 1px solid #eee;
+    white-space: nowrap; /* Prevent line breaks in hour items */
+    height: 20px; /* Adjusted height for hour items */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transition for hover effect */
+    cursor: pointer; /* Change cursor to pointer on hover */
 }
 
 /* Alternate row colors */
-.even-row {
+.day-row:nth-child(even) {
     background-color: #f9f9f9;
 }
 
-.odd-row {
+.day-row:nth-child(odd) {
     background-color: #e6e6e6;
 }
