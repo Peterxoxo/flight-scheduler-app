@@ -1,33 +1,54 @@
 import React from 'react';
-import { useSchedule } from '../context/ScheduleContext';
-import { useDragAndDrop } from '../hooks/useDragAndDrop';
-import FlightCard from './FlightCard';
 import './ScheduleGrid.css';
 
-const ScheduleGrid: React.FC = () => {
-    const { schedule } = useSchedule();
-    const { onDragStart, onDrop } = useDragAndDrop();
+interface ScheduleGridProps {
+    nrofCabinCrew: number; // Number of columns in the schedule
+}
+
+const ScheduleGrid: React.FC<ScheduleGridProps> = ({ nrofCabinCrew }) => {
+    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const hours = Array.from({ length: 24 }, (_, i) => i); // 0 to 23 hours
 
     return (
         <div className="schedule-grid">
-            {schedule.map((day, dayIndex) => (
-                <div key={dayIndex} className="day-column">
-                    <h3>{`Day ${dayIndex + 1}`}</h3>
-                    <div
-                        className="timeline"
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={(e) => onDrop(e, dayIndex)}
-                    >
-                        {day.flights.map((flight, flightIndex) => (
-                            <FlightCard
-                                key={flight.id}
-                                flight={flight}
-                                onDragStart={(e) => onDragStart(e, flight, dayIndex, flightIndex)}
-                            />
+            {/* Render the header row with crew labels */}
+            <div className="schedule-header">
+                <div className="empty-cell"></div>
+                {Array.from({ length: nrofCabinCrew }, (_, crewIndex) => (
+                    <div key={crewIndex} className="crew-header">
+                        {`Crew ${crewIndex + 1}`}
+                    </div>
+                ))}
+            </div>
+
+            {/* Render the schedule grid */}
+            <div className="schedule-body">
+                {daysOfWeek.map((day) => (
+                    <div key={day} className="day-row">
+                        <div className="day-label">{day}</div>
+                        {Array.from({ length: nrofCabinCrew }, (_, crewIndex) => (
+                            <div key={crewIndex} className="crew-column">
+                                {hours.map((hour) => (
+                                    <div
+                                        key={`${day}-${hour}-${crewIndex}`}
+                                        className="hour-slot"
+                                        onDragOver={(e) => e.preventDefault()}
+                                        onDrop={(e) => {
+                                            const flightData = e.dataTransfer.getData('flight');
+                                            console.log(
+                                                `Dropped flight on Crew ${crewIndex + 1}, ${day} at ${hour}:00`,
+                                                flightData
+                                            );
+                                        }}
+                                    >
+                                        {`${hour}:00`}
+                                    </div>
+                                ))}
+                            </div>
                         ))}
                     </div>
-                </div>
-            ))}
+                ))}
+            </div>
         </div>
     );
 };
