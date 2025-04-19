@@ -1,0 +1,53 @@
+.flight-grid {
+    display: grid;
+    grid-auto-rows: minmax(50px, auto); /* Automatically adjust row height */
+    gap: 1px;
+    width: 100%; /* Full width */
+    max-width: 800px; /* Optional: Limit the grid width */
+    margin: 0 auto; /* Center the grid horizontally */
+    border: 1px solid #ccc;
+    background-color: #fff;
+}
+
+.flight-header {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* Four equal columns */
+    font-weight: bold;
+    text-align: center;
+    background-color: #a79999;
+    color: #fff;
+    padding: 10px 0;
+}
+
+.flight-header-item {
+    padding: 10px;
+    border: 1px solid #ccc;
+    background-color: #555;
+    text-align: center;
+    white-space: nowrap; /* Prevent line breaks */
+}
+
+.flight-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* Four equal columns */
+    text-align: center;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+}
+
+.flight-cell {
+    padding: 10px;
+    border: 1px solid #ccc;
+    white-space: nowrap; /* Prevent line breaks */
+    overflow: hidden; /* Hide overflow text */
+    text-overflow: ellipsis; /* Add ellipsis for overflowing text */
+}
+
+.flight-row:nth-child(even) {
+    background-color: #f1f1f1; /* Alternate row colors */
+}
+
+.flight-row:hover {
+    background-color: #e0e0e0; /* Highlight row on hover */
+    cursor: pointer; /* Change cursor to pointer */
+}
