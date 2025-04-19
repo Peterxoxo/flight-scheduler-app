@@ -7,9 +7,14 @@ interface ScheduleGridProps {
     onFlightDrop: (flightId: number) => void; // Callback to remove flight from the flight list
 }
 
+interface MarkedHour {
+    isMarked: boolean;
+    airport?: string; // Airport information (departure or destination)
+}
+
 const ScheduleGrid: React.FC<ScheduleGridProps> = ({ nrOfCabinCrew, daysInMonth, onFlightDrop }) => {
     const [hoveredHours, setHoveredHours] = useState<{ [key: string]: boolean }>({}); // Track hovered hours
-    const [markedHours, setMarkedHours] = useState<{ [key: string]: boolean }>({}); // Track marked hours
+    const [markedHours, setMarkedHours] = useState<{ [key: string]: MarkedHour }>({}); // Track marked hours with airport info
 
     const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
         event.preventDefault(); // Allow dropping
@@ -20,7 +25,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ nrOfCabinCrew, daysInMonth,
         const endHour = parseInt(flight.landingTime.split(':')[0], 10);
 
         const newHoveredHours: { [key: string]: boolean } = {};
-        for (let hour = startHour; hour < endHour; hour++) {
+        for (let hour = startHour; hour <= endHour; hour++) {
             const cellKey = `${dayIndex}-${crewIndex}-${hour}`;
             newHoveredHours[cellKey] = true;
         }
@@ -52,11 +57,38 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ nrOfCabinCrew, daysInMonth,
             return;
         }
 
-        // Mark the hours for the dropped flight, including the landing hour
-        const newMarkedHours = { ...markedHours };
-        for (let hour = startHour; hour <= endHour; hour++) { // Use <= to include endHour
+        // Check if any of the target cells are already marked
+        for (let hour = startHour; hour <= endHour; hour++) {
             const cellKey = `${dayIndex}-${crewIndex}-${hour}`;
-            newMarkedHours[cellKey] = true;
+            if (markedHours[cellKey]?.isMarked) {
+                console.error('Cannot add a flight to an already chosen hour-cell');
+                return;
+            }
+        }
+
+        // Check if the departure airport matches the previous flight's arrival airport
+        const previousArrivalKey = `${dayIndex}-${crewIndex}-${startHour - 1}`;
+        const previousArrivalAirport = markedHours[previousArrivalKey]?.airport;
+        if (previousArrivalAirport && previousArrivalAirport !== flight.departureAirport) {
+            console.error(
+                `The departure airport (${flight.departureAirport}) does not match the previous arrival airport (${previousArrivalAirport})`
+            );
+            return;
+        }
+
+        // Mark the hours for the dropped flight
+        const newMarkedHours = { ...markedHours };
+        for (let hour = startHour; hour <= endHour; hour++) {
+            const cellKey = `${dayIndex}-${crewIndex}-${hour}`;
+            newMarkedHours[cellKey] = {
+                isMarked: true,
+                airport:
+                    hour === startHour
+                        ? flight.departureAirport // Show departure airport on the first hour
+                        : hour === endHour
+                        ? flight.destinationAirport // Show destination airport on the last hour
+                        : undefined, // No airport for intermediate hours
+            };
         }
         setMarkedHours(newMarkedHours);
 
@@ -109,14 +141,15 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ nrOfCabinCrew, daysInMonth,
                             {hours.map((hour, hourIndex) => {
                                 const cellKey = `${dayIndex}-${crewIndex}-${hourIndex}`;
                                 const isHovered = hoveredHours[cellKey];
-                                const isMarked = markedHours[cellKey];
+                                const markedHour = markedHours[cellKey];
 
                                 return (
                                     <div
                                         key={hourIndex}
-                                        className={`hour-item ${isHovered ? 'hovered' : ''} ${isMarked ? 'marked' : ''}`}
+                                        className={`hour-item ${isHovered ? 'hovered' : ''} ${markedHour?.isMarked ? 'marked' : ''}`}
                                     >
-                                        {hour}
+                                        <div className="time">{hour}</div> {/* Always show the time */}
+                                        {markedHour?.airport && <div className="airport">{markedHour.airport}</div>} {/* Show airport if marked */}
                                     </div>
                                 );
                             })}

@@ -88,20 +88,31 @@
 
 .hour-item {
     display: flex;
-    flex-direction: row;
-    font-size: 10px;
-    padding: 2px ;
-    border-bottom: 1px solid #eee;
-    white-space: nowrap; /* Prevent line breaks in hour items */
-    height: 20px; /* Adjusted height for hour items */
-    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transition for hover effect */
-    cursor: pointer; /* Change cursor to pointer on hover */
+    justify-content: space-between;
+    padding: 4px;
+    font-size: 12px;
+}
+
+.hour-item .time {
+    font-weight: normal;
+    color: #333;
+}
+
+.hour-item .airport {
+    font-weight: bold;
+    color: #004085;
 }
 
 .hour-item.marked {
-    background-color: #cce5ff; /* Highlight color for marked cells */
-    color: #004085; /* Text color for marked cells */
+    background-color: #cce5ff; /* Light blue background for marked cells */
+    border: 1px solid #004085; /* Highlight border color for marked cells */
     font-weight: bold;
+    color: #004085;
+}
+
+.hour-item.hovered {
+    background-color: #e0f7fa; /* Light blue background for hover effect */
+    border: 1px solid #00acc1; /* Highlight border color for hovered cells */
 }
 
 /* Alternate row colors */
