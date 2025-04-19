@@ -68,11 +68,17 @@
     text-align: center;
     background-color: #f9f9f9;
     padding: 1px;
-    border: 1px dashed #ddd;
+    border: 1px solid #ddd;
     cursor: pointer;
     white-space: nowrap; /* Prevent line breaks in hour cells */
     height: 30px; /* Adjusted height for hour cells */
-    }
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.hour-cell.hovered {
+    background-color: #e0f7fa; /* Light blue background for hover effect */
+    border-color: #00acc1; /* Highlight border color */
+}
 
 .hour-item:hover {
     background-color: #e0e0e0; /* Change background color on hover */

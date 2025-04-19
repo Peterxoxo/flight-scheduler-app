@@ -14,7 +14,8 @@ const App: React.FC = () => {
 
     const handleDragStart = (flight: { id: number }) => {
         return (event: React.DragEvent<HTMLDivElement>) => {
-            event.dataTransfer.setData('flightId', flight.id.toString());
+            console.log('Setting flight data on drag start:', flight); // Debugging log
+            event.dataTransfer.setData('flight', JSON.stringify(flight)); // Use 'flight' as the key
         };
     };
 
