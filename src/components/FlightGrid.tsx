@@ -12,10 +12,22 @@ interface Flight {
 interface FlightGridProps {
     flights: Flight[]; // Flights passed from the parent
     onDragStart: (flight: Flight) => (event: React.DragEvent<HTMLDivElement>) => void; // Callback for drag start
+    onDragEnd: () => void;
+    onFlightDrop: () => void; // Callback for flight drop
 }
-const FlightGrid: React.FC<FlightGridProps> = ({ flights, onDragStart }) => {
+
+const FlightGrid: React.FC<FlightGridProps> = ({ flights, onDragStart, onDragEnd, onFlightDrop }) => {
+    const handleFlightDrop = (event: React.DragEvent<HTMLDivElement>) => {
+        event.preventDefault(); // Prevent default behavior
+        onFlightDrop(); // Notify the parent to cancel the overlay
+    };
+
+    const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+        event.preventDefault(); // Allow dropping
+    };
+
     return (
-        <div className="flight-grid">
+        <div className="flight-grid" onDrop={handleFlightDrop} onDragOver={handleDragOver}>
             {/* Header Row */}
             <div className="flight-header">
                 <div className="flight-header-item">Take-Off Time</div>
@@ -31,6 +43,7 @@ const FlightGrid: React.FC<FlightGridProps> = ({ flights, onDragStart }) => {
                     className="flight-row"
                     draggable
                     onDragStart={onDragStart(flight)} // Pass the flight to the parent on drag start
+                    onDragEnd={onDragEnd} // Notify the parent when dragging ends
                 >
                     <div className="flight-cell">{flight.takeOffTime}</div>
                     <div className="flight-cell">{flight.landingTime}</div>

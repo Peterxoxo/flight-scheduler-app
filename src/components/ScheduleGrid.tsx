@@ -5,35 +5,48 @@ interface ScheduleGridProps {
     nrOfCabinCrew: number; // Number of cabin crew columns in the calendar
     daysInMonth: number; // Number of days in the month
     onFlightDrop: (flightId: number) => void; // Callback to remove flight from the flight list
+    isDragging: boolean; // Track if a flight is being dragged}
 }
-
 interface MarkedHour {
     isMarked: boolean;
     airport?: string; // Airport information (departure or destination)
 }
 
-const ScheduleGrid: React.FC<ScheduleGridProps> = ({ nrOfCabinCrew, daysInMonth, onFlightDrop }) => {
-    const [hoveredHours, setHoveredHours] = useState<{ [key: string]: boolean }>({}); // Track hovered hours
+const ScheduleGrid: React.FC<ScheduleGridProps> = ({ nrOfCabinCrew, daysInMonth, onFlightDrop, isDragging }) => {
+    const [hoveredCell, setHoveredCell] = useState<string[]>([]); // Track the hovered cell
     const [markedHours, setMarkedHours] = useState<{ [key: string]: MarkedHour }>({}); // Track marked hours with airport info
 
     const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
         event.preventDefault(); // Allow dropping
     };
 
-    const handleDragEnter = (dayIndex: number, crewIndex: number, flight: { takeOffTime: string; landingTime: string }) => {
+    const handleDragEnter = (event: React.DragEvent<HTMLDivElement>, dayIndex: number, crewIndex: number) => {
+        if (!isDragging) return; // Only apply hover effect when dragging
+
+        const flightData = event.dataTransfer.getData('flight');
+        if (!flightData) {
+            console.error('No flight data found in dataTransfer');
+            return;
+        }
+
+        const flight = JSON.parse(flightData);
+
         const startHour = parseInt(flight.takeOffTime.split(':')[0], 10);
         const endHour = parseInt(flight.landingTime.split(':')[0], 10);
 
-        const newHoveredHours: { [key: string]: boolean } = {};
+        const hoveredCells = [];
         for (let hour = startHour; hour <= endHour; hour++) {
             const cellKey = `${dayIndex}-${crewIndex}-${hour}`;
-            newHoveredHours[cellKey] = true;
+            hoveredCells.push(cellKey);
         }
-        setHoveredHours(newHoveredHours); // Highlight only the affected hours
+
+        setHoveredCell(hoveredCells); // Set all the cells in the range as hovered
     };
 
-    const handleDragLeave = () => {
-        setHoveredHours({}); // Clear the hovered hours
+    const handleDragLeave = (dayIndex: number, crewIndex: number, hourIndex: number) => {
+        if (!isDragging) return; // Only apply hover effect when dragging
+        const cellKey = `${dayIndex}-${crewIndex}-${hourIndex}`;
+        setHoveredCell((prev) => prev.filter((key) => key !== cellKey)); // Remove the cell from the hovered list
     };
 
     const handleDrop = (event: React.DragEvent<HTMLDivElement>, dayIndex: number, crewIndex: number) => {
@@ -95,15 +108,11 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ nrOfCabinCrew, daysInMonth,
         // Notify parent to remove the flight from the flight list
         onFlightDrop(flight.id);
 
-        // Clear the hovered hours
-        setHoveredHours({});
+        // Clear the hovered cell
+        setHoveredCell([]);
     };
 
-    const generate24Hours = (): string[] => {
-        return Array.from({ length: 24 }, (_, hour) => `${hour.toString().padStart(2, '0')}:00`);
-    };
-
-    const hours = generate24Hours();
+    const hours = Array.from({ length: 24 }, (_, hour) => `${hour.toString().padStart(2, '0')}:00`);
 
     return (
         <div className="schedule-grid">
@@ -124,29 +133,20 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ nrOfCabinCrew, daysInMonth,
 
                     {/* Display all 24 hours for each cabin crew */}
                     {Array.from({ length: nrOfCabinCrew }, (_, crewIndex) => (
-                        <div
-                            key={crewIndex}
-                            className="hour-cell"
-                            onDragOver={handleDragOver}
-                            onDragEnter={(event) => {
-                                const flightData = event.dataTransfer.getData('flight');
-                                if (flightData) {
-                                    const flight = JSON.parse(flightData);
-                                    handleDragEnter(dayIndex, crewIndex, flight);
-                                }
-                            }}
-                            onDragLeave={handleDragLeave}
-                            onDrop={(event) => handleDrop(event, dayIndex, crewIndex)}
-                        >
+                        <div key={crewIndex} className="hour-cell">
                             {hours.map((hour, hourIndex) => {
                                 const cellKey = `${dayIndex}-${crewIndex}-${hourIndex}`;
-                                const isHovered = hoveredHours[cellKey];
+                                const isHovered = isDragging && hoveredCell.includes(cellKey); // Only hover when dragging
                                 const markedHour = markedHours[cellKey];
 
                                 return (
                                     <div
                                         key={hourIndex}
                                         className={`hour-item ${isHovered ? 'hovered' : ''} ${markedHour?.isMarked ? 'marked' : ''}`}
+                                        onDragOver={handleDragOver}
+                                        onDragEnter={(event) => handleDragEnter(event, dayIndex, crewIndex)} // Pass flight data
+                                        onDragLeave={() => handleDragLeave(dayIndex, crewIndex, hourIndex)}
+                                        onDrop={(event) => handleDrop(event, dayIndex, crewIndex)}
                                     >
                                         <div className="time">{hour}</div> {/* Always show the time */}
                                         {markedHour?.airport && <div className="airport">{markedHour.airport}</div>} {/* Show airport if marked */}
