@@ -91,7 +91,7 @@
 
 .hour-item {
     border: 1px solid #ddd;
-    background-color: #6acbf2;
+    background-color: #ffffff;
     transition: background-color 0.1s ease, border-color 0.1s ease; /* Reduced transition duration */
     padding: 4px;
     text-align: center;

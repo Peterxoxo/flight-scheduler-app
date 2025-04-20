@@ -15,6 +15,7 @@ interface MarkedHour {
 const ScheduleGrid: React.FC<ScheduleGridProps> = ({ nrOfCabinCrew, daysInMonth, onFlightDrop, isDragging }) => {
     const [hoveredCell, setHoveredCell] = useState<string[]>([]); // Track the hovered cell
     const [markedHours, setMarkedHours] = useState<{ [key: string]: MarkedHour }>({}); // Track marked hours with airport info
+    const [crewCurrentAirport, setCrewCurrentAirport] = useState<{ [key: number]: string }>({}); // Track current airport for each crew
 
     const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
         event.preventDefault(); // Allow dropping
@@ -60,15 +61,18 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ nrOfCabinCrew, daysInMonth,
 
         const flight = JSON.parse(flightData);
 
+        // Validate that the flight's departure airport matches the crew's current airport
+        const currentAirport = crewCurrentAirport[crewIndex];
+        if (currentAirport && currentAirport !== flight.departureAirport) {
+            console.error(
+                `The departure airport (${flight.departureAirport}) does not match the crew's current airport (${currentAirport})`
+            );
+            return;
+        }
+
         // Validate that the flight's take-off time matches the drop location
         const startHour = parseInt(flight.takeOffTime.split(':')[0], 10);
         const endHour = parseInt(flight.landingTime.split(':')[0], 10);
-
-        const dropHour = dayIndex * 24 + startHour; // Calculate the hour on the grid
-        if (dropHour % 24 !== startHour) {
-            console.error('Flight take-off time does not match the drop location');
-            return;
-        }
 
         // Check if any of the target cells are already marked
         for (let hour = startHour; hour <= endHour; hour++) {
@@ -77,16 +81,6 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ nrOfCabinCrew, daysInMonth,
                 console.error('Cannot add a flight to an already chosen hour-cell');
                 return;
             }
-        }
-
-        // Check if the departure airport matches the previous flight's arrival airport
-        const previousArrivalKey = `${dayIndex}-${crewIndex}-${startHour - 1}`;
-        const previousArrivalAirport = markedHours[previousArrivalKey]?.airport;
-        if (previousArrivalAirport && previousArrivalAirport !== flight.departureAirport) {
-            console.error(
-                `The departure airport (${flight.departureAirport}) does not match the previous arrival airport (${previousArrivalAirport})`
-            );
-            return;
         }
 
         // Mark the hours for the dropped flight
@@ -104,6 +98,12 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ nrOfCabinCrew, daysInMonth,
             };
         }
         setMarkedHours(newMarkedHours);
+
+        // Update the crew's current airport to the flight's destination airport
+        setCrewCurrentAirport((prev) => ({
+            ...prev,
+            [crewIndex]: flight.destinationAirport,
+        }));
 
         // Notify parent to remove the flight from the flight list
         onFlightDrop(flight.id);
