@@ -119,6 +119,27 @@
     color: #004085;
 }
 
+.hour-item.declined {
+    background-color: #ffcccc; /* Light red background for declined cells */
+    border-color: #ff0000; /* Red border for declined cells */
+    animation: shake 0.3s ease-in-out; /* Add a shake animation */
+}
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-5px);
+    }
+    50% {
+        transform: translateX(5px);
+    }
+    75% {
+        transform: translateX(-5px);
+    }
+}
+
 /* Alternate row colors */
 .day-row:nth-child(even) {
     background-color: #f9f9f9;

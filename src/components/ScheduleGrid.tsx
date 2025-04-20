@@ -16,6 +16,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ nrOfCabinCrew, daysInMonth,
     const [hoveredCell, setHoveredCell] = useState<string[]>([]); // Track the hovered cell
     const [markedHours, setMarkedHours] = useState<{ [key: string]: MarkedHour }>({}); // Track marked hours with airport info
     const [crewCurrentAirport, setCrewCurrentAirport] = useState<{ [key: number]: string }>({}); // Track current airport for each crew
+    const [declinedCells, setDeclinedCells] = useState<string[]>([]); // Track cells where a flight was declined
 
     const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
         event.preventDefault(); // Allow dropping
@@ -67,6 +68,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ nrOfCabinCrew, daysInMonth,
             console.error(
                 `The departure airport (${flight.departureAirport}) does not match the crew's current airport (${currentAirport})`
             );
+            highlightDeclinedCells(dayIndex, crewIndex, flight); // Highlight declined cells
             return;
         }
 
@@ -79,6 +81,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ nrOfCabinCrew, daysInMonth,
             const cellKey = `${dayIndex}-${crewIndex}-${hour}`;
             if (markedHours[cellKey]?.isMarked) {
                 console.error('Cannot add a flight to an already chosen hour-cell');
+                highlightDeclinedCells(dayIndex, crewIndex, flight); // Highlight declined cells
                 return;
             }
         }
@@ -112,6 +115,43 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ nrOfCabinCrew, daysInMonth,
         setHoveredCell([]);
     };
 
+    const highlightDeclinedCells = (
+        dayIndex: number,
+        crewIndex: number,
+        flight: { takeOffTime: string; landingTime: string }
+    ) => {
+        const startHour = parseInt(flight.takeOffTime.split(':')[0], 10);
+        const endHour = parseInt(flight.landingTime.split(':')[0], 10);
+
+        const declined = [];
+        for (let hour = startHour; hour <= endHour; hour++) {
+            const cellKey = `${dayIndex}-${crewIndex}-${hour}`;
+            declined.push(cellKey);
+        }
+
+        // Find the last marked hour for the crew
+        let previousHourKey = null;
+        for (let hour = startHour - 1; hour >= 0; hour--) {
+            const cellKey = `${dayIndex}-${crewIndex}-${hour}`;
+            if (markedHours[cellKey]?.airport) {
+                previousHourKey = cellKey;
+                break;
+            }
+        }
+
+        // Add the previous destination airport cell to the declined list
+        if (previousHourKey) {
+            declined.push(previousHourKey);
+        }
+
+        setDeclinedCells(declined); // Highlight the declined cells
+
+        // Clear the declined cells after a delay
+        setTimeout(() => {
+            setDeclinedCells([]);
+        }, 2000); // 2 seconds delay
+    };
+
     const hours = Array.from({ length: 24 }, (_, hour) => `${hour.toString().padStart(2, '0')}:00`);
 
     return (
@@ -137,19 +177,22 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ nrOfCabinCrew, daysInMonth,
                             {hours.map((hour, hourIndex) => {
                                 const cellKey = `${dayIndex}-${crewIndex}-${hourIndex}`;
                                 const isHovered = isDragging && hoveredCell.includes(cellKey); // Only hover when dragging
+                                const isDeclined = declinedCells.includes(cellKey); // Highlight declined cells
                                 const markedHour = markedHours[cellKey];
 
                                 return (
                                     <div
                                         key={hourIndex}
-                                        className={`hour-item ${isHovered ? 'hovered' : ''} ${markedHour?.isMarked ? 'marked' : ''}`}
+                                        className={`hour-item ${isHovered ? 'hovered' : ''} ${isDeclined ? 'declined' : ''} ${
+                                            markedHour?.isMarked ? 'marked' : ''
+                                        }`}
                                         onDragOver={handleDragOver}
-                                        onDragEnter={(event) => handleDragEnter(event, dayIndex, crewIndex)} // Pass flight data
+                                        onDragEnter={(event) => handleDragEnter(event, dayIndex, crewIndex)}
                                         onDragLeave={() => handleDragLeave(dayIndex, crewIndex, hourIndex)}
                                         onDrop={(event) => handleDrop(event, dayIndex, crewIndex)}
                                     >
-                                        <div className="time">{hour}</div> {/* Always show the time */}
-                                        {markedHour?.airport && <div className="airport">{markedHour.airport}</div>} {/* Show airport if marked */}
+                                        <div className="time">{hour}</div>
+                                        {markedHour?.airport && <div className="airport">{markedHour.airport}</div>}
                                     </div>
                                 );
                             })}
